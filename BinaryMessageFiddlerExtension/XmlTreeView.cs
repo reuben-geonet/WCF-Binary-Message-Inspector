@@ -18,6 +18,8 @@ namespace BinaryMessageFiddlerExtension
         // if the message body has fewer than this number of nodes, expand the entire body subtree.
         private const int AutoExpandAllThreshold = 50; //entirely arbitrary.
 
+        public string DefaultSaveFileName { get; set; }
+
         public TreeView TreeView
         {
             get
@@ -223,6 +225,7 @@ namespace BinaryMessageFiddlerExtension
             {
                 saveFileDialog.AddExtension = true;
                 saveFileDialog.DefaultExt = "xml";
+                saveFileDialog.FileName = String.IsNullOrEmpty(DefaultSaveFileName) ? "decoded-wcf.xml" : DefaultSaveFileName;
                 saveFileDialog.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
                 saveFileDialog.OverwritePrompt = true;
                 saveFileDialog.Title = "Save decoded WCF XML";

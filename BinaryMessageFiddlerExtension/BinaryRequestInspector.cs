@@ -102,6 +102,14 @@ namespace BinaryMessageFiddlerExtension
             return 1;
         }
 
+        public override void AssignSession(Session oS)
+        {
+            if (viewControl != null && oS != null)
+                viewControl.DefaultSaveFileName = String.Format("request{0}.xml", oS.id);
+
+            base.AssignSession(oS);
+        }
+
         public bool bDirty { get; set; }
 
         public bool bReadOnly
@@ -130,6 +138,9 @@ namespace BinaryMessageFiddlerExtension
             {
                 // when fiddler updates this inspector's content, our controls' content
                 binaryContent = value;
+                if (viewControl != null && String.IsNullOrEmpty(viewControl.DefaultSaveFileName))
+                    viewControl.DefaultSaveFileName = "request.xml";
+
                 UpdateControlContent();
             }
         }
