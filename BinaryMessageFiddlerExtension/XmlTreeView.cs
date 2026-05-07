@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using System.IO;
 
 namespace BinaryMessageFiddlerExtension
 {
@@ -38,10 +39,12 @@ namespace BinaryMessageFiddlerExtension
             // NodeMouseClick doesn't fire for middle click, so emulate that using mouseup/mousedown
             TreeView.MouseUp += new MouseEventHandler(TreeView_MouseUp);
             TreeView.MouseDown += new MouseEventHandler(TreeView_MouseDown);
+            TreeView.KeyDown += new KeyEventHandler(TreeView_KeyDown);
             TreeView.ContextMenu.MenuItems.Add(new MenuItem("Expand All", ExpandAll_Click, Shortcut.AltRightArrow));
             TreeView.ContextMenu.MenuItems.Add(new MenuItem("Collapse All", CollapseAll_Click, Shortcut.AltLeftArrow));
             TreeView.ContextMenu.MenuItems.Add(new MenuItem("Copy", CopyMenuItem_Click, Shortcut.CtrlC));
             TreeView.ContextMenu.MenuItems.Add(new MenuItem("Copy Tree", CopyTreeMenuItem_Click, Shortcut.CtrlShiftC));
+            TreeView.ContextMenu.MenuItems.Add(new MenuItem("Save Tree...", SaveTreeMenuItem_Click, Shortcut.CtrlS));
         }
 
         public void LoadXml(XmlDocument doc)
@@ -207,6 +210,41 @@ namespace BinaryMessageFiddlerExtension
                 System.Windows.Forms.Clipboard.SetText(subtreeContent);
         }
 
+        private void SaveSubtreeContentToFile()
+        {
+            if (TreeView.SelectedNode == null)
+                return;
+
+            String subtreeContent = GenerateSubtreeString(TreeView.SelectedNode);
+            if (subtreeContent == null)
+                return;
+
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.AddExtension = true;
+                saveFileDialog.DefaultExt = "xml";
+                saveFileDialog.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
+                saveFileDialog.OverwritePrompt = true;
+                saveFileDialog.Title = "Save decoded WCF XML";
+
+                if (saveFileDialog.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                try
+                {
+                    File.WriteAllText(saveFileDialog.FileName, subtreeContent, Encoding.UTF8);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this,
+                        "Unable to save decoded XML: " + ex.Message,
+                        "Save decoded WCF XML",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
+        }
+
         private string GenerateSubtreeString(TreeNode treeNode)
         {
             XmlNode xml = treeNode.Tag as XmlNode;
@@ -264,6 +302,16 @@ namespace BinaryMessageFiddlerExtension
             }
         } 
 
+        private void TreeView_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && !e.Shift && e.KeyCode == Keys.S)
+            {
+                SaveSubtreeContentToFile();
+                e.SuppressKeyPress = true;
+                e.Handled = true;
+            }
+        }
+
         private void CopyMenuItem_Click(Object sender, System.EventArgs e)
         {
             CopySelectedNodeContentToClipboard();
@@ -272,6 +320,11 @@ namespace BinaryMessageFiddlerExtension
         private void CopyTreeMenuItem_Click(Object sender, System.EventArgs e)
         {
             CopySubtreeContentToClipboard();
+        }
+
+        private void SaveTreeMenuItem_Click(Object sender, System.EventArgs e)
+        {
+            SaveSubtreeContentToFile();
         }
 
         private void ExpandAll_Click(Object sender, System.EventArgs e)

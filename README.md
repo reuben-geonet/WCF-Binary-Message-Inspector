@@ -27,6 +27,7 @@ The tree view provides the following shortcuts:
 
 * Ctrl+c — Copy current node XML
 * Ctrl+Shift+c — Copy tree XML
+* Ctrl+s — Save tree XML to a file
 * Alt+→ — Expand node and all child nodes
 * Alt+← — Collapse node and all child nodes
 * Middle-click — Toggle expand/collapse of node and all child nodes
